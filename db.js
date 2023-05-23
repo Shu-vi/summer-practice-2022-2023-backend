@@ -11,14 +11,14 @@ class Database {
 
     async createUser(user) {
         const session = this.driver.session();
-
         try {
             const result = await session.run(
                 'CREATE (u:User {firstName: $firstName, lastName: $lastName, username: $username, password: $password, city: $city, district: $district}) RETURN u',
                 user
             );
-
             return result.records[0].get('u').properties;
+        } catch (error) {
+            throw new Error('Не удалось создать пользователя');
         } finally {
             await session.close();
         }
@@ -27,7 +27,12 @@ class Database {
     async getUserByUsername(username) {
         const session = this.driver.session();
         try {
-            return await session.run('MATCH (u:User {username: $username}) RETURN u', {username});
+            const result = await session.run('MATCH (u:User {username: $username}) RETURN u', {
+                username: username
+            });
+            return result.records.length > 0 ? result.records[0].get('u').properties : null;
+        } catch (error) {
+            throw new Error('Не удалось получить пользователя');
         } finally {
             await session.close();
         }
@@ -40,6 +45,8 @@ class Database {
                 'MATCH (u:User {username: $username}) SET u = $updatedUser',
                 { username: user.username, updatedUser: user }
             );
+        } catch (error) {
+            throw new Error('Не удалось обновить пользователя');
         } finally {
             await session.close();
         }
@@ -49,10 +56,12 @@ class Database {
         const session = this.driver.session();
         try {
             const result = await session.run(
-                'CREATE (g:Game {lastUpdateDate: $lastUpdateDate, maxPlayers: $maxPlayers, id: $id}) RETURN g',
+                'CREATE (g:Game {lastUpdateDate: $lastUpdateDate, maxPlayers: $maxPlayers, id: $id, owner: $owner, title: $title}) RETURN g',
                 game
             );
             return result.records[0].get('g').properties;
+        } catch (e) {
+            throw new Error('Не удалось создать игру');
         } finally {
             await session.close();
         }
@@ -61,7 +70,10 @@ class Database {
     async getGameById(id) {
         const session = this.driver.session();
         try {
-            return await session.run('MATCH (g:Game {id: $id}) RETURN g', {id});
+            const result = await session.run('MATCH (g:Game {id: $id}) RETURN g', {id});
+            return result.records.length > 0 ? result.records[0].get('g').properties : null;
+        } catch (e) {
+            throw new Error('Не удалось получить игру по id');
         } finally {
             await session.close();
         }
@@ -70,7 +82,10 @@ class Database {
     async getGames() {
         const session = this.driver.session();
         try {
-            return await session.run('MATCH (g:Game) RETURN ID (g) AS id, g');
+            const result = await session.run('MATCH (g:Game) RETURN g');
+            return result.records.length > 0 ? result.records.map(game => game.get('g').properties) : null;
+        } catch (e) {
+            throw new Error('Не удалось получить игры');
         } finally {
             await session.close();
         }
@@ -83,6 +98,8 @@ class Database {
                 'MATCH (g:Game {id: $id}) SET g = $updatedGame',
                 { id: game.id, updatedGame: game }
             );
+        } catch (e) {
+            throw new Error('Не удалось обновить игру');
         } finally {
             await session.close();
         }
@@ -90,26 +107,32 @@ class Database {
 
     async createPhrase(phrase) {
         const session = this.driver.session();
-
         try {
             const result = await session.run(
-                'CREATE (p:Phrase {message: $message, date: $date}) RETURN p',
+                'MATCH (u:User {username: $username}), (g:Game {id: $gameId}) ' +
+                'CREATE (p:Phrase {text: $text, timestamp: $timestamp})-[:SENT_BY]->(u)-[:SENT_IN]->(r) ' +
+                'RETURN m',
                 phrase
             );
             return result.records[0].get('p').properties;
+        } catch (e) {
+            throw new Error('Не удалось создать фразу');
         } finally {
             await session.close();
         }
     }
 
-    async getPhrasesByUserAndGame(userId, gameId) {
+    async getPhrasesByGame(gameId) {
         const session = this.driver.session();
-
         try {
-            return await session.run(
-                'MATCH (p:Phrase)<-[:SENT]-(u:User {username: $userId})-[:PARTICIPATED_IN]->(g:Game {id: $gameId}) RETURN p',
-                {userId, gameId}
+            const result = await session.run(
+                'MATCH (p:Phrase)-[:SENT_IN]->(g:Game {id: $gameId}) ' +
+                'RETURN m ORDER BY p.timestamp',
+                { gameId }
             );
+            return result.records.length > 0 ? result.records.map(phrase => phrase.get('p').properties) : null;
+        } catch (e) {
+            throw new Error('Не удалось получить фразу по игре');
         } finally {
             await session.close();
         }
