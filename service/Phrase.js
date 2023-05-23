@@ -1,29 +1,27 @@
+const db = require('../db')
 
 
-module.exports = class UserService {
-    constructor(db) {
-        this.db = db;
-    }
-
+class PhraseService {
     async createPhrase(phrase) {
         try {
-            return await this.db.createPhrase(phrase);
+            phrase.timestamp = Date.now();
+            return await db.createPhrase(phrase);
         } catch (error) {
-            console.error(error);
             throw error;
         }
     }
 
-    async getPhrasesByUserAndGame(userId, gameId) {
+    async getPhrasesByGame(gameId) {
         try {
-            const result = await this.db.getPhrasesByUserAndGame(userId, gameId);
-            if (result.records.length === 0) {
-                return null;
+            const phrases = db.getPhrasesByGame(gameId);
+            if (phrases === null) {
+                throw new Error('В этой игре пока нет ни 1 сообщения');
             }
-            return result.records.map(record => record.get('p').properties);
+            return phrases;
         } catch (error) {
-            console.error(error);
             throw error;
         }
     }
 }
+
+module.exports = new PhraseService()

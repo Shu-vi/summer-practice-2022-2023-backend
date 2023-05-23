@@ -1,43 +1,45 @@
 const db = require('../db')
+const userService = require("./User");
+const {v4: uuidv4} = require('uuid');
 
 class GameService {
-
     async createGame(game) {
-        const { v4: uuidv4 } = require('uuid');
         game.id = uuidv4();
         game.lastUpdateDate = Date.now();
+        if (game.maxPlayers > 10) {
+            throw new Error('Игроков не может быть больше 10');
+        }
         try {
+            const user = await userService.getUserByUsername(game.owner);
+            if (user == null) {
+                throw new Error('Пользователя с таким именем не существует');
+            }
             return await db.createGame(game);
-        } catch (error) {
-            console.error(error);
-            throw error;
+        } catch (e) {
+            throw e;
         }
     }
 
     async getGameById(id) {
         try {
-            const result = await db.getGameById(id);
-            if (result.records.length === 0) {
-                return null;
-            } else {
-                return result.records[0].get('g').properties;
+            const game = await db.getGameById(id);
+            if (game === null) {
+                throw new Error('Игра с таким id не найдена. Возможно она была удалена');
             }
+            return game;
         } catch (error) {
-            console.error(error);
             throw error;
         }
     }
 
     async getGames() {
         try {
-            const result = await db.getGames();
-            if (result.records.length === 0) {
-                return null;
-            } else {
-                return result.records.map(record => record.get('g').properties);
+            const games = await db.getGames();
+            if (games === null) {
+                throw new Error('Не найдено ни 1 игры');
             }
+            return games;
         } catch (error) {
-            console.error(error);
             throw error;
         }
     }
@@ -45,9 +47,13 @@ class GameService {
     async updateGame(game) {
         game.lastUpdateDate = Date.now();
         try {
-            await db.updateGame(game)
+            const isExist = db.getGameById(game.id);
+            if (isExist) {
+                await db.updateGame(game);
+            } else {
+                throw new Error('Не найдено ни 1 игры');
+            }
         } catch (error) {
-            console.error(error);
             throw error;
         }
     }
