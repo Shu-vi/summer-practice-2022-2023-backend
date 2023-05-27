@@ -13,7 +13,7 @@ class Database {
         const session = this.driver.session();
         try {
             const result = await session.run(
-                'CREATE (u:User {firstName: $firstName, lastName: $lastName, username: $username, password: $password, city: $city, district: $district}) RETURN u',
+                'CREATE (u:User {firstName: $firstName, lastName: $lastName, username: $username, password: $password, city: $city, district: $district, role: $role}) RETURN u',
                 user
             );
             return result.records[0].get('u').properties;
@@ -110,8 +110,8 @@ class Database {
         try {
             const result = await session.run(
                 'MATCH (u:User {username: $username}), (g:Game {id: $gameId}) ' +
-                'CREATE (p:Phrase {text: $text, timestamp: $timestamp})-[:SENT_BY]->(u)-[:SENT_IN]->(r) ' +
-                'RETURN m',
+                'CREATE (u)-[:SAY]->(p:Phrase {text: $text, timestamp: $timestamp})-[:TO]->(g)' +
+                'RETURN p',
                 phrase
             );
             return result.records[0].get('p').properties;
@@ -126,11 +126,11 @@ class Database {
         const session = this.driver.session();
         try {
             const result = await session.run(
-                'MATCH (p:Phrase)-[:SENT_IN]->(g:Game {id: $gameId}) ' +
-                'RETURN m ORDER BY p.timestamp',
+                'MATCH (u:User)-[:SAY]->(p:Phrase)-[:TO]->(g:Game {id: $gameId}) ' +
+                'RETURN p, u ORDER BY p.timestamp',
                 { gameId }
             );
-            return result.records.length > 0 ? result.records.map(phrase => phrase.get('p').properties) : null;
+            return result.records.length > 0 ? result.records.map(phrase => ({phrase: phrase.get('p').properties, user: phrase.get('u').properties})) : null;
         } catch (e) {
             throw new Error('Не удалось получить фразу по игре');
         } finally {
