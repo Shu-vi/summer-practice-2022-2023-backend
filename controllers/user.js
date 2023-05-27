@@ -3,9 +3,8 @@ const userService = require("../service/User");
 class UserController {
     async create(req, res) {
         const { firstName, lastName, username, password, city, district } = req.body;
-
         try {
-            const user = await this.userService.createUser({
+            const user = await userService.createUser({
                 firstName,
                 lastName,
                 username,
@@ -22,7 +21,7 @@ class UserController {
     async getByUsername(req, res) {
         const { username } = req.params;
         try {
-            const user = await this.userService.getUserByUsername(username);
+            const user = await userService.getUserByUsername(username);
             if (user == null) {
                 return res.status(404).json({ message: 'Пользователь с таким именем не найден' });
             }
@@ -36,7 +35,7 @@ class UserController {
         const { firstName, lastName, username, password, city, district } = req.body;
 
         try {
-            const user = await this.userService.updateUser({
+            const user = await userService.updateUser({
                 firstName,
                 lastName,
                 username,
@@ -48,6 +47,18 @@ class UserController {
         } catch (error) {
             return res.status(500).json({ message: error.message });
         }
+    }
+
+    async login(req, res) {
+        const {username, password} = req.body;
+
+        try {
+            const token = await userService.login(username, password);
+            return res.status(200).json({token})
+        } catch (e) {
+            return res.status(500).json(e.message);
+        }
+
     }
 }
 
