@@ -105,6 +105,53 @@ class Database {
         }
     }
 
+    async connectToGame(username, gameId) {
+        const session = this.driver.session();
+        try {
+            await session.run(
+                'MATCH (u:User {username: $username}), (g:Game {id: $gameId}) ' +
+                'MERGE (u)-[:CONNECTED_TO]->(g)',
+                { username, gameId }
+            );
+        } catch (error) {
+            throw new Error('Не удалось подключить пользователя к игре');
+        } finally {
+            await session.close();
+        }
+    }
+
+    async disconnectFromGame(username, gameId) {
+        const session = this.driver.session();
+        try {
+            await session.run(
+                'MATCH (u:User {username: $username})-[c:CONNECTED_TO]->(g:Game {id: $gameId}) ' +
+                'DELETE c',
+                { username, gameId }
+            );
+        } catch (error) {
+            throw new Error('Не удалось отключить пользователя от игры');
+        } finally {
+            await session.close();
+        }
+    }
+
+    async countConnections(gameId) {
+        const session = this.driver.session();
+        try {
+            const result = await session.run(
+                'MATCH (g:Game {id: $gameId})<-[c:CONNECTED_TO]-() ' +
+                'RETURN count(c) as connections',
+                { gameId }
+            );
+            const record = result.records[0];
+            return record.get('connections').toNumber();
+        } catch (error) {
+            throw new Error('Не удалось посчитать количество подключений к игре');
+        } finally {
+            await session.close();
+        }
+    }
+
     async createPhrase(phrase) {
         const session = this.driver.session();
         try {

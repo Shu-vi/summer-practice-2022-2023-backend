@@ -5,13 +5,16 @@ module.exports = function (req, res, next) {
         next();
     }
     try {
-        const token = req.headers.authorization.split(' ')[1];
-        if (!token) {
+        const token = JSON.parse(req.headers.authorization.split(' ')[1]);
+        console.log(token);
+        if (!token.token) {
+            console.log('tut');
             return res.status(401).json({message: "Не авторизован"});
         }
-        req.user = jwt.verify(token, process.env.SECRET_KEY);
+        req.user = jwt.verify(token.token, process.env.SECRET_KEY);
         next();
     } catch (e) {
+        console.log('tut2');
         res.status(401).json({message: "Не авторизован"});
     }
 };

@@ -8,6 +8,8 @@ class GameService {
         game.lastUpdateDate = Date.now();
         if (game.maxPlayers > 10) {
             throw new Error('Игроков не может быть больше 10');
+        } else if (game.maxPlayers < 2) {
+            throw new Error('Игроков не может быть меньше 2');
         }
         try {
             const user = await userService.getUserByUsername(game.owner);
@@ -47,12 +49,46 @@ class GameService {
     async updateGame(game) {
         game.lastUpdateDate = Date.now();
         try {
-            const isExist = db.getGameById(game.id);
+            const isExist = await db.getGameById(game.id);
             if (isExist) {
                 await db.updateGame(game);
             } else {
                 throw new Error('Не найдено ни 1 игры');
             }
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async connectToGame(username, gameId) {
+        try {
+            const isExist = await db.getGameById(gameId);
+            if (isExist) {
+                const countConnections = await this.countConnections(gameId);
+                if (isExist.maxPlayers > countConnections) {
+                    await db.connectToGame(username, gameId);
+                } else {
+                    throw new Error('Игра переполнена.');
+                }
+            } else {
+                throw new Error('Игра не найдена.');
+            }
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async disconnectFromGame(username, gameId) {
+        try {
+            await db.disconnectFromGame(username, gameId);
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async countConnections(gameId) {
+        try {
+            return await db.countConnections(gameId);
         } catch (error) {
             throw error;
         }

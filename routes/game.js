@@ -7,5 +7,9 @@ const authMiddleware = require('../middleware/auth');
 router.post('/', authMiddleware, gameController.create);
 router.get('/', gameController.getAll);
 router.get('/:id', authMiddleware, gameController.getGameById);
+router.post('/connect/:id', authMiddleware, gameController.connectToGame);
+router.post('/disconnect/:id', authMiddleware, gameController.disconnectFromGame);
+router.get('/count/:id', gameController.countConnections);
+
 
 module.exports = router;
