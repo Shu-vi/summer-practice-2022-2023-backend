@@ -34,6 +34,14 @@ class GameService {
         }
     }
 
+    async getGameByUsername(username) {
+        try {
+            return await db.getGameByUsername(username);
+        } catch (e) {
+            throw e;
+        }
+    }
+
     async getGames() {
         try {
             const games = await db.getGames();

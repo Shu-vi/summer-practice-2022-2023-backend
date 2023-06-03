@@ -30,6 +30,16 @@ class GameController {
         }
     }
 
+    async getGameByUsername(req, res) {
+        const {username} = req.params;
+        try {
+            const game = await gameService.getGameByUsername(username);
+            return res.status(200).json(game);
+        } catch (e) {
+            return res.status(500).json({message: e.message});
+        }
+    }
+
     //TODO updateGame
 
     async connectToGame(req, res) {

@@ -79,6 +79,18 @@ class Database {
         }
     }
 
+    async getGameByUsername(username) {
+        const session = this.driver.session();
+        try {
+            const result = await session.run('match (u:User {username: $username})-[c:CONNECTED_TO]->(g:Game) return g', {username});
+            return result.records.length > 0 ? result.records[0].get('g').properties : null;
+        } catch (e) {
+            throw new Error('Не удалось получить игру по username')
+        } finally {
+            await session.close();
+        }
+    }
+
     async getGames() {
         const session = this.driver.session();
         try {
