@@ -2,17 +2,42 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const router = require('./routes/index');
-// const errorHandler = require('./middleware/ErrorHandling');
+const app = express();
+const WSServer = (require('express-ws'))(app);
+const aWss = WSServer.getWss();
 const PORT = process.env.PORT || 5002;
 
-const app = express();
 
 app.use(cors());
 app.use(express.json());
 app.use('/api', router);
 
-// app.use(errorHandler)
+app.ws('/', (ws, req) => {
+    ws.on('message', (msg) => {
+        msg = JSON.parse(msg);
+        switch (msg.method) {
+            case "connection":
+                connectionHandler(ws, msg);
+                break;
+            case "chat":
+                broadcastConnection(ws, msg);
+                break;
+        }
+    });
+});
 
+const connectionHandler = (ws, msg) => {
+    ws.id = msg.id;
+    broadcastConnection(ws, msg);
+};
+
+const broadcastConnection = (ws, msg) => {
+    aWss.clients.forEach(client => {
+        if (client.id === msg.id) {
+            client.send(JSON.stringify(msg));
+        }
+    });
+};
 
 const start = () => {
     try {

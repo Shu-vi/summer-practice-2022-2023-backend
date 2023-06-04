@@ -1,9 +1,10 @@
-const db = require('../db')
-
+const db = require('../db');
+const {v4: uuidv4} = require('uuid');
 
 class PhraseService {
     async createPhrase(phrase) {
         try {
+            phrase.id = uuidv4();
             phrase.timestamp = Date.now();
             return await db.createPhrase(phrase);
         } catch (error) {
@@ -20,6 +21,14 @@ class PhraseService {
             return phrases;
         } catch (error) {
             throw error;
+        }
+    }
+
+    async getPhraseById(id) {
+        try {
+            const phrase = await db.getPhraseById(id);
+        } catch (e) {
+            throw e;
         }
     }
 }

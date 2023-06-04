@@ -169,7 +169,7 @@ class Database {
         try {
             const result = await session.run(
                 'MATCH (u:User {username: $username}), (g:Game {id: $gameId}) ' +
-                'CREATE (u)-[:SAY]->(p:Phrase {text: $text, timestamp: $timestamp})-[:TO]->(g)' +
+                'CREATE (u)-[:SAY]->(p:Phrase {text: $text, timestamp: $timestamp, id: $id})-[:TO]->(g)' +
                 'RETURN p',
                 phrase
             );
@@ -192,6 +192,22 @@ class Database {
             return result.records.length > 0 ? result.records.map(phrase => ({phrase: phrase.get('p').properties, user: phrase.get('u').properties})) : null;
         } catch (e) {
             throw new Error('Не удалось получить фразу по игре');
+        } finally {
+            await session.close();
+        }
+    }
+
+    async getPhraseById(id) {
+        const session = this.driver.session();
+        try {
+            const result = await session.run(
+                'MATCH (u:User)-[:SAY]->(p:Phrase {id: $id})-[:TO]->(g:Game) ' +
+                'RETURN p, u ORDER BY p.timestamp',
+                {id}
+            );
+            return result.records.length > 0 ? result.records.map(phrase => ({phrase: phrase.get('p').properties, user: phrase.get('u').properties})) : null;
+        } catch (e) {
+            throw new Error('Не удалось получить фразу по id');
         } finally {
             await session.close();
         }

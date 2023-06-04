@@ -20,8 +20,6 @@ class PhraseController {
             return res.status(500).json({message: e.message});
         }
     }
-
-    //TODO updateGame
 }
 
 module.exports = new PhraseController();
