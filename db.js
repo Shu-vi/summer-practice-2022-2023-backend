@@ -212,6 +212,26 @@ class Database {
             await session.close();
         }
     }
+
+    async deleteGame(id) {
+        const session = this.driver.session();
+        try {
+            await session.run(
+                'MATCH (u:User)-[s:SAY]->(p:Phrase)-[t:TO]->(g:Game {id: $id}) ' +
+                'DETACH DELETE p, g',
+                {id}
+            );
+            await session.run(
+                'MATCH (g:Game {id: $id}) ' +
+                'DETACH DELETE g',
+                {id}
+            )
+        } catch (e) {
+            throw new Error('Не удалось удалить игру');
+        } finally {
+            await session.close();
+        }
+    }
 }
 
 module.exports = new Database(process.env.DB_URI, process.env.DB_USERNAME, process.env.DB_PASSWORD);

@@ -1,4 +1,5 @@
 require('dotenv').config();
+const cron = require('node-cron');
 const express = require('express');
 const cors = require('cors');
 const router = require('./routes/index');
@@ -6,6 +7,7 @@ const app = express();
 const WSServer = (require('express-ws'))(app);
 const aWss = WSServer.getWss();
 const PORT = process.env.PORT || 5002;
+const db = require('./db');
 
 
 app.use(cors());
@@ -39,8 +41,20 @@ const broadcastConnection = (ws, msg) => {
     });
 };
 
-const start = () => {
+const checkGamesAndDelete = async () => {
+    const games = await db.getGames() || [];
+    const currentTimestamp = Date.now();
+    for (const game of games) {
+        const diff = currentTimestamp - game.lastUpdateDate;
+        if (new Date(diff).getMinutes() > 5) {
+            await db.deleteGame(game.id);
+        }
+    }
+}
+
+const start = async () => {
     try {
+        await db.deleteGame('dff80dbd-12db-4d47-a312-82ddd3ff89ce');
         app.listen(PORT, () => {
             console.log(`server has been started on port ${PORT}`);
         });
@@ -50,3 +64,5 @@ const start = () => {
 };
 
 start();
+
+cron.schedule('*/5 * * * *', checkGamesAndDelete);
