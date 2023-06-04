@@ -64,6 +64,15 @@ class GameService {
         }
     }
 
+    async updateTimestamp(game) {
+        game.lastUpdateDate = Date.now();
+        try {
+            await db.updateGame(game);
+        } catch (e) {
+            throw e;
+        }
+    }
+
     async connectToGame(username, gameId) {
         try {
             const isExist = await db.getGameById(gameId);
@@ -71,6 +80,7 @@ class GameService {
                 const countConnections = await this.countConnections(gameId);
                 if (isExist.maxPlayers > countConnections) {
                     await db.connectToGame(username, gameId);
+                    await this.updateTimestamp(isExist);
                 } else {
                     throw new Error('Игра переполнена.');
                 }
@@ -84,7 +94,14 @@ class GameService {
 
     async disconnectFromGame(username, gameId) {
         try {
-            await db.disconnectFromGame(username, gameId);
+            const isExist = await db.getGameById(gameId);
+            if (isExist) {
+                await db.disconnectFromGame(username, gameId);
+                await this.updateTimestamp(isExist);
+            } else {
+                throw new Error('Игра не найдена.');
+            }
+
         } catch (error) {
             throw error;
         }
