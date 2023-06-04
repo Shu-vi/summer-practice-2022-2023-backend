@@ -16,6 +16,7 @@
     "express-ws": "^5.0.2",
     "jsonwebtoken": "^9.0.0",
     "neo4j-driver": "^5.8.0",
+    "node-cron": "^3.0.2",
     "uuid": "^9.0.0"
   },
   "devDependencies": {
