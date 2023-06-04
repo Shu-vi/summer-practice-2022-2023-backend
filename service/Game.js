@@ -24,11 +24,7 @@ class GameService {
 
     async getGameById(id) {
         try {
-            const game = await db.getGameById(id);
-            if (game === null) {
-                throw new Error('Игра с таким id не найдена. Возможно она была удалена');
-            }
-            return game;
+            return await db.getGameById(id);
         } catch (error) {
             throw error;
         }
