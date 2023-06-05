@@ -11,6 +11,7 @@ router.post('/connect/:id', authMiddleware, gameController.connectToGame);
 router.post('/disconnect/:id', authMiddleware, gameController.disconnectFromGame);
 router.get('/count/:id', gameController.countConnections);
 router.get('/by-username/:username', authMiddleware, gameController.getGameByUsername);
+router.post('/search', gameController.searchGamesByUsernameOrTitle);
 
 
 module.exports = router;

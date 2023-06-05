@@ -73,6 +73,16 @@ class GameController {
             return res.status(500).json({message: e.message});
         }
     }
+
+    async searchGamesByUsernameOrTitle(req, res) {
+        const {criterion} = req.body;
+        try {
+            const games = await gameService.searchGamesByUsernameOrTitle(criterion);
+            return res.status(200).json(games);
+        } catch (e) {
+            return res.status(500).json({message: e.message});
+        }
+    }
 }
 
 module.exports = new GameController();

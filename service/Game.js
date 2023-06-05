@@ -1,6 +1,7 @@
 const db = require('../db');
 const userService = require("./User");
 const {v4: uuidv4} = require('uuid');
+const fuzz = require('fuzzball');
 
 class GameService {
     async createGame(game) {
@@ -112,6 +113,19 @@ class GameService {
             return await db.countConnections(gameId);
         } catch (error) {
             throw error;
+        }
+    }
+
+    async searchGamesByUsernameOrTitle(criterion){
+        try {
+            let games = await this.getGames();
+            games = games.filter(game => (fuzz.WRatio(criterion, game.owner) > 75) || (fuzz.WRatio(criterion, game.title) > 75));
+            if (games.length === 0) {
+                throw new Error('По заданным критериям не удалось найти ни 1 игру');
+            }
+            return games;
+        } catch (e) {
+            throw e;
         }
     }
 }
