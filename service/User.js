@@ -50,6 +50,14 @@ class UserService {
         }
         return generateJwt(username, user.role)
     }
+
+    async getUsersByGameId(gameId) {
+        try {
+            return await db.getUsersByGameId(gameId);
+        } catch (e) {
+            throw e;
+        }
+    }
 }
 
 module.exports = new UserService()

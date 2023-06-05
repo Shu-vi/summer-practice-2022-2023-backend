@@ -9,6 +9,22 @@ class Database {
         await this.driver.close();
     }
 
+    async getUsersByGameId(gameId) {
+        const session = this.driver.session();
+        try {
+            const users = await session.run(
+                'MATCH (u:User)-[:CONNECTED_TO]->(Game {id: $gameId}) ' +
+                'RETURN u',
+                {gameId }
+            );
+            return users.records.length > 0 ? users.records.map(user => user.get('u').properties) : null;
+        } catch (error) {
+            throw new Error('Не удалось подключить пользователя к игре');
+        } finally {
+            await session.close();
+        }
+    }
+
     async createUser(user) {
         const session = this.driver.session();
         try {

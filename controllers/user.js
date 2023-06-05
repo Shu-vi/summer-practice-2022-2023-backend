@@ -1,4 +1,5 @@
 const userService = require("../service/User");
+const db = require("../db");
 
 class UserController {
     async create(req, res) {
@@ -59,6 +60,16 @@ class UserController {
             return res.status(500).json({message: e.message});
         }
 
+    }
+
+    async getUsersByGameId(req, res) {
+        const {gameId} = req.body;
+        try {
+            const users = await userService.getUsersByGameId(gameId);
+            return res.status(200).json(users);
+        } catch (e) {
+            return res.status(500).json({message: e.message});
+        }
     }
 }
 
