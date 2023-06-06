@@ -68,6 +68,36 @@ class Database {
         }
     }
 
+    async getActiveUsers() {
+        const session = this.driver.session();
+        try {
+            const result = await session.run(
+                'MATCH (g:Game)<-[c:CONNECTED_TO]-(u:User) ' +
+                'RETURN u'
+            );
+            return result.records.length > 0 ? result.records.map(user => user.get('u').properties) : null;
+        } catch (error) {
+            throw new Error('Не удалось получить активных пользователей');
+        } finally {
+            await session.close();
+        }
+    }
+
+    async getAllUsers() {
+        const session = this.driver.session();
+        try {
+            const result = await session.run(
+                'MATCH (u:User) ' +
+                'RETURN u'
+            );
+            return result.records.length > 0 ? result.records.map(user => user.get('u').properties) : null;
+        } catch (error) {
+            throw new Error('Не удалось получить пользователей');
+        } finally {
+            await session.close();
+        }
+    }
+
     async createGame(game) {
         const session = this.driver.session();
         try {
@@ -244,21 +274,6 @@ class Database {
             )
         } catch (e) {
             throw new Error('Не удалось удалить игру');
-        } finally {
-            await session.close();
-        }
-    }
-
-    async getActiveUsers() {
-        const session = this.driver.session();
-        try {
-            const result = await session.run(
-                'MATCH (g:Game)<-[c:CONNECTED_TO]-(u:User) ' +
-                'RETURN u'
-            );
-            return result.records.length > 0 ? result.records.map(user => user.get('u').properties) : null;
-        } catch (error) {
-            throw new Error('Не удалось получить активных пользователей');
         } finally {
             await session.close();
         }

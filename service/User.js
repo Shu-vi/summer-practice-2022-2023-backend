@@ -66,6 +66,14 @@ class UserService {
             throw e;
         }
     }
+
+    async getAllUsers() {
+        try {
+            return await db.getAllUsers();
+        } catch (e) {
+            throw e;
+        }
+    }
 }
 
 module.exports = new UserService()

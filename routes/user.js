@@ -10,5 +10,6 @@ router.post('/active', authMiddleware, checkRole('ADMIN'), userController.getAct
 router.get('/:username', authMiddleware, userController.getByUsername);
 router.post('/login', userController.login);
 router.post('/by-game-id', authMiddleware, userController.getUsersByGameId);
+router.get('/', authMiddleware, checkRole('ADMIN'), userController.getAllUsers);
 
 module.exports = router;
