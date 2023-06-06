@@ -256,7 +256,7 @@ class Database {
                 'MATCH (g:Game)<-[c:CONNECTED_TO]-(u:User) ' +
                 'RETURN u'
             );
-            return result.records.length > 0 ? result.records.map(user => ({user: user.get('u').properties})) : null;
+            return result.records.length > 0 ? result.records.map(user => user.get('u').properties) : null;
         } catch (error) {
             throw new Error('Не удалось получить активных пользователей');
         } finally {
