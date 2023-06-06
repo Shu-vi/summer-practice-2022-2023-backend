@@ -248,6 +248,21 @@ class Database {
             await session.close();
         }
     }
+
+    async getActiveUsers() {
+        const session = this.driver.session();
+        try {
+            const result = await session.run(
+                'MATCH (g:Game)<-[c:CONNECTED_TO]-(u:User) ' +
+                'RETURN u'
+            );
+            return result.records.length > 0 ? result.records.map(user => ({user: user.get('u').properties})) : null;
+        } catch (error) {
+            throw new Error('Не удалось получить активных пользователей');
+        } finally {
+            await session.close();
+        }
+    }
 }
 
 module.exports = new Database(process.env.DB_URI, process.env.DB_USERNAME, process.env.DB_PASSWORD);
