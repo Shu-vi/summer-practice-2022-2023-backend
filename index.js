@@ -54,7 +54,6 @@ const checkGamesAndDelete = async () => {
 
 const start = async () => {
     try {
-        await db.deleteGame('dff80dbd-12db-4d47-a312-82ddd3ff89ce');
         app.listen(PORT, () => {
             console.log(`server has been started on port ${PORT}`);
         });
