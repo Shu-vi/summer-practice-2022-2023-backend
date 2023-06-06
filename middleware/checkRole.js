@@ -6,11 +6,11 @@ module.exports = function(role) {
             next();
         }
         try {
-            const token = req.headers.authorization.split(' ')[1]; // Bearer asfasnfkajsfnjk
-            if (!token) {
+            const token = JSON.parse(req.headers.authorization.split(' ')[1]);
+            if (!token.token) {
                 return res.status(401).json({message: "Не авторизован"});
             }
-            const decoded = jwt.verify(token, process.env.SECRET_KEY);
+            const decoded = jwt.verify(token.token, process.env.SECRET_KEY);
             if (decoded.role !== role) {
                 return res.status(403).json({message: "Нет доступа"});
             }
