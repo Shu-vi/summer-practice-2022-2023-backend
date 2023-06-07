@@ -1,10 +1,7 @@
 # images
 static/*
 #ide
-../.idea
-
-### dotenv ###
-.env
+.idea
 
 ### Node ###
 # Logs
