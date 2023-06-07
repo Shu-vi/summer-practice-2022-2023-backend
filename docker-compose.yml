@@ -1,0 +1,25 @@
+version: '3'
+services:
+  backend:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    ports:
+      - '5000:5000'
+    depends_on:
+      - neo4j
+
+  neo4j:
+    image: neo4j:4.4.3-community
+    ports:
+      - 7474:7474
+      - 7687:7687
+    restart: unless-stopped
+    environment:
+      - NEO4J_AUTH=neo4j/password
+    volumes:
+      - ./db/data:/data
+      - ./db/conf:/conf
+      - ./db/logs:/logs
+      - ./db/plugins:/plugins
+    command: neo4j start

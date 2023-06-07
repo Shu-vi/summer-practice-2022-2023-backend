@@ -280,4 +280,4 @@ class Database {
     }
 }
 
-module.exports = new Database(process.env.DB_URI, process.env.DB_USERNAME, process.env.DB_PASSWORD);
+module.exports = new Database(process.env.DOCKER_DB_URI, process.env.DOCKER_DB_USERNAME, process.env.DOCKER_DB_PASSWORD);
